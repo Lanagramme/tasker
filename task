@@ -1,0 +1,168 @@
+#! /bin/python
+
+import sys
+import os
+import csv
+from tabulate import tabulate
+
+def filter_property(data, property, value):
+  return data[property] == value
+
+def new_task(description, tag, liste):
+  global tasks
+  def get_id():
+    if len(tasks): return int(tasks[-1]["id"]) + 1
+    else: return 0
+
+  return {
+      "id": get_id(),
+      "tag": tag,
+      "description": description,
+      "liste" : liste
+    }
+
+def save_tasks():
+  global tasks
+  with open('tasks.csv', "w", newline='') as task_file:
+    writer = csv.DictWriter(task_file, ["id", "tag", "description", "liste"])
+    writer.writeheader()
+    for task in tasks:
+        writer.writerow(task)
+
+def loadtasks():
+  task_file = './tasks.csv'
+
+  if os.path.exists(task_file):
+    with open(task_file, mode="r") as file:
+      reader = csv.DictReader(file)
+      data = []
+
+      for row in reader:
+        data.append(dict(row))
+
+    return data
+  else: return []
+
+def main():
+  global tasks
+  tasks = tasks
+  if len(sys.argv) == 1:
+    action = "help"
+  else: action = sys.argv[1]
+
+  if action == "-help" or action == "--help" or action == "-h" or action == "--h" or action == "h":
+    action = "help"
+  sys.argv[:2] = []
+  match action:
+    case "help":
+      print("task add : add task")
+      print("task add +mytag : add task with tag mytag ")
+      print("task add -mylist : add task to list mylist ")
+      print("task add -mylist +mytag : add task with tag mytag to list mylist")
+      print("task list : list all tasks")
+      print("task list mytag : list all tasks with tag mytag")
+      print("task list +mytag : list all tasks with tag mytag")
+      print("task list -mylist : list all in liste mylist")
+      print("task list -mylist +mytag : list all in liste mylist with tag mytag")
+      print("task delete id1 : delete task at id id1")
+      print("task delete id1 id2 id3 : delete task at id id1 id2 and id3")
+      print("task delete all : delete all tasks")
+      print("task lists : list all lists")
+      return
+    case "add":
+      if not len(sys.argv) : 
+        print("Can't add empty task")
+        return 
+      
+      if sys.argv[0][0] == "-": 
+        liste = sys.argv[0][1:]
+        sys.argv.pop(0)
+      else: liste = "default"
+
+      if sys.argv[0][0] == "+": 
+        tag = sys.argv[0][1:]
+        sys.argv.pop(0)
+      else: tag = "unsorted"
+        
+      if not len(sys.argv) : 
+        print("Can't add empty task")
+        return 
+        
+      task = " ".join(sys.argv)
+      tasks.append(new_task(task, tag, liste))
+      save_tasks()
+
+    case "list":
+      if not len(tasks):
+        print("There are no tasks yet.")
+        return 
+
+      # if len(sys.argv) == 2:
+      #   data = list(filter(lambda task: filter_property(task, "tag", sys.argv[0]), tasks))
+      # else: data = tasks
+
+      data = tasks
+
+      params = sys.argv
+      print(params)
+      
+      for i in range(len(params)):
+        match params[0][0]:
+          case "-": 
+            Filter = "liste"
+            value = params[0][1:]
+          case "+":
+            Filter = "tag"
+            value = params[0][1:]
+          case _:
+            Filter = "tag"
+            value = params[0]
+        data = list(filter(lambda task: filter_property(task,Filter, value), tasks))
+        params.pop(0)
+
+
+      if not len(data): 
+        print("No task with tag " + sys.argv[0])
+      else:
+        for i in data:
+          i = i.pop('liste')
+        table = tabulate(data, headers="keys", tablefmt="pretty")
+        print(table) 
+      
+    case "delete":
+      if not len(tasks):
+        print("There are no tasks yet.")
+        return 
+      if not len(sys.argv):
+        print("Delete requires an id")
+        return
+      if sys.argv[0] == "all":
+        tasks = []
+        save_tasks()
+        return
+
+      for j in range(len(sys.argv)):
+        for i, task in enumerate(tasks):
+          if task["id"] == sys.argv[j]:
+            tasks.pop(i)
+            save_tasks()
+
+    case "lists" :
+      if not len(tasks):
+        print("There are no tasks yet.")
+        return 
+      listes = []
+      for task in tasks:
+        if task["liste"] not in listes:
+          listes.append(task["liste"])
+      print('Your lists: ')
+      for liste in listes:
+        print(":: " + liste)
+
+    case _:
+      print("action inconnue")
+
+tasks = loadtasks()
+  
+main()
+# print(tasks)
