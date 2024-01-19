@@ -1,15 +1,9 @@
 id,tag,description,liste
 0,adulting,Résillier l'abonnement fitnesspark,default
-1,hack,Add tree-sitter-norg to nvim config,default
 2,hack,Convert my keybindings from awesome to sxhkd,default
 3,hack,Use rofi as my clipboard,default
-4,adulting,Prendre rendez-vous pour une évaluation au CRA,default
 5,hack,Read the norg specification,default
 6,craft,Craft a cardboard phone holder,default
-7,hack,Add tabs to nvim,default
-8,craft,Craft notebooks,default
 9,hack,Python CSV database,default
-12,courses,Big bottle,default
-13,courses,Bottles,default
-15,courses,Lingettes corps,default
-16,courses,Lingettes surfaces,default
+10,unsorted,Check kevin's bank,default
+11,unsorted,orginize veil notes,default
